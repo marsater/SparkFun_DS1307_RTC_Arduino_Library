@@ -1,3 +1,9 @@
+# Using the I2C library with the DS1307 RTC
+This is a fork of [*the sparkfun RTC library*](https://github.com/sparkfun/SparkFun_DS1307_RTC_Arduino_Library) uses the I2C library instead of the wire library wich avoids having the program hang if
+the connection is lost.
+
+[The standard *wire* library for I2C communication can hang the programm.](https://github.com/arduino/Arduino/issues/1476#issue-15828095)
+
 SparkFun Real Time Clock Module (DS1307) Arduino Library
 ========================================
 
@@ -12,8 +18,8 @@ Repository Contents
 
 * **/examples** - Example sketches for the library (.ino). Run these from the Arduino IDE.
 * **/src** - Source files for the library (.cpp, .h).
-* **keywords.txt** - Keywords from this library that will be highlighted in the Arduino IDE. 
-* **library.properties** - General library properties for the Arduino package manager. 
+* **keywords.txt** - Keywords from this library that will be highlighted in the Arduino IDE.
+* **library.properties** - General library properties for the Arduino package manager.
 
 Documentation
 --------------
@@ -22,7 +28,7 @@ Documentation
 * **[Product Repository](https://github.com/sparkfun/RTC-Module/tree/v1.4)** - Main repository (including hardware files) for the Real Time Clock Module.
 * **[Hookup Guide](https://learn.sparkfun.com/tutorials/real-time-clock-module-hookup-guide)** - Basic hookup guide for the Real Time Clock Module.
 
-Products that use this Library 
+Products that use this Library
 ---------------------------------
 
 * [SparkFun Real Time Clock Module (BOB-12708)](https://www.sparkfun.com/products/12708)- Basic breakout for the DS1307, including pull-up resistors and a coin cell battery holder.
@@ -35,9 +41,9 @@ Version History
 License Information
 -------------------
 
-This product is _**open source**_! 
+This product is _**open source**_!
 
-Please review the LICENSE.md file for license information. 
+Please review the LICENSE.md file for license information.
 
 If you have any questions or concerns on licensing, please contact techsupport@sparkfun.com.
 
