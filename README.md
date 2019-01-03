@@ -1,9 +1,11 @@
 # Using the I2C library with the DS1307 RTC
-This is a fork of [*the sparkfun RTC library*](https://github.com/sparkfun/SparkFun_DS1307_RTC_Arduino_Library) uses the I2C library instead of the wire library wich avoids having the program hang if
+This is a fork of [*the sparkfun RTC library*](https://github.com/sparkfun/SparkFun_DS1307_RTC_Arduino_Library) uses the [I2C library](https://github.com/rambo/I2C) instead of the wire library wich avoids having the program hang if
 the connection is lost.
 
 [The standard *wire* library for I2C communication can hang the programm.](https://github.com/arduino/Arduino/issues/1476#issue-15828095)
 
+##### Requirements
+* [I2C library](https://github.com/rambo/I2C)
 SparkFun Real Time Clock Module (DS1307) Arduino Library
 ========================================
 
