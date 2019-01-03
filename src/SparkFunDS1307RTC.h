@@ -18,7 +18,8 @@ SparkFun Real Time Clock Module (v14)
 #define SPARKFUNDS1307RTC_H
 
 #include <Arduino.h>
-#include <Wire.h>
+//#include <Wire.h>
+#include <I2C.h>
 
 #define DS1307_RTC_ADDRESS 0x68 // DS1307 only has one I2C address - 0x68
 
@@ -77,7 +78,7 @@ static const char *dayIntToStr[7] {
 	"Wednesday",
 	"Thursday",
 	"Friday",
-	"Saturday"	
+	"Saturday"
 };
 
 // dayIntToChar -- convert day integer to character
@@ -86,7 +87,7 @@ static const char dayIntToChar[7] = {'U', 'M', 'T', 'W', 'R', 'F', 'S'};
 class DS1307
 {
 public:
-	
+
 	////////////////////
 	// Initialization //
 	////////////////////
@@ -94,7 +95,7 @@ public:
 	DS1307();
 	// Begin -- Initialize I2C interface
 	void begin(void);
-	
+
 	///////////////////////
 	// Setting the Clock //
 	///////////////////////
@@ -105,7 +106,7 @@ public:
 	bool setTime(uint8_t * time, uint8_t len);
 	// autoTime -- Set time with compiler time/date
 	bool autoTime();
-	
+
 	// To set specific values of the clock, use the set____ functions:
 	bool setSecond(uint8_t s);
 	bool setMinute(uint8_t m);
@@ -114,7 +115,7 @@ public:
 	bool setDate(uint8_t d);
 	bool setMonth(uint8_t mo);
 	bool setYear(uint8_t y);
-	
+
 	///////////////////////
 	// Reading the Clock //
 	///////////////////////
@@ -131,7 +132,7 @@ public:
 	inline uint8_t date(void) { return BCDtoDEC(_time[TIME_DATE]); };
 	inline uint8_t month(void) { return BCDtoDEC(_time[TIME_MONTH]);	};
 	inline uint8_t year(void) { return BCDtoDEC(_time[TIME_YEAR]); };
-	
+
 	// To read a single value at a time, use the get___ functions:
 	uint8_t getSecond(void);
 	uint8_t getMinute(void);
@@ -140,34 +141,34 @@ public:
 	uint8_t getDate(void);
 	uint8_t getMonth(void);
 	uint8_t getYear(void);
-	
+
 	// is12Hour -- check if the DS1307 is in 12-hour mode | returns true if 12-hour mode
 	bool is12Hour(void);
 	// pm -- Check if 12-hour state is AM or PM | returns true if PM
 	bool pm(void);
-	
+
 	///////////////////////////////
 	// SQW Pin Control Functions //
 	///////////////////////////////
 	void writeSQW(uint8_t high); // Write SQW pin high or low
 	void writeSQW(sqw_rate value); // Write SQW pin high, low, or to a set rate
-	
+
 	/////////////////////////////
 	// Misc. Control Functions //
 	/////////////////////////////
 	void enable(void); // Enable the oscillator
 	void disable(void); // Disable the oscillator (no counting!)
-	
+
 	bool set12Hour(bool enable12 = true); // Enable/disable 12-hour mode
 	bool set24Hour(bool enable24 = true); // Enable/disable 24-hour mode
-	
+
 private:
 	uint8_t _time[TIME_ARRAY_LENGTH];
 	bool _pm;
-	
+
 	uint8_t BCDtoDEC(uint8_t val);
 	uint8_t DECtoBCD(uint8_t val);
-	
+
 	bool i2cWriteBytes(uint8_t deviceAddress, ds1307_registers reg, uint8_t * values, uint8_t len);
 	bool i2cWriteByte(uint8_t deviceAddress, ds1307_registers reg, uint8_t value);
 	uint8_t i2cReadByte(uint8_t deviceAddress, ds1307_registers reg);

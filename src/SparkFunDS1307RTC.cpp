@@ -17,6 +17,7 @@ SparkFun Real Time Clock Module (v14)
 
 #include "SparkFunDS1307RTC.h"
 
+#define I2C_TIMEOUT 500 // I2C timeout 500ms
 // Parse the __DATE__ predefined macro to generate date defaults:
 // __Date__ Format: MMM DD YYYY (First D may be a space if <10)
 // <MONTH>
@@ -72,7 +73,8 @@ DS1307::DS1307()
 // Begin -- Initialize I2C interface
 void DS1307::begin(void)
 {
-	Wire.begin();
+	I2c.begin();
+    I2c.timeOut(I2C_TIMEOUT);
 }
 
 // setTime -- Set time and date/day registers of DS1307
@@ -85,7 +87,7 @@ bool DS1307::setTime(uint8_t sec, uint8_t min, uint8_t hour, uint8_t day, uint8_
 	_time[TIME_DATE] = DECtoBCD(date);
 	_time[TIME_MONTH] = DECtoBCD(month);
 	_time[TIME_YEAR] = DECtoBCD(year);
-	
+
 	return setTime(_time, TIME_ARRAY_LENGTH);
 }
 
@@ -94,7 +96,7 @@ bool DS1307::setTime(uint8_t * time, uint8_t len)
 {
 	if (len != TIME_ARRAY_LENGTH)
 		return false;
-	
+
 	return i2cWriteBytes(DS1307_RTC_ADDRESS, DS1307_REGISTER_BASE, time, TIME_ARRAY_LENGTH);
 }
 
@@ -126,11 +128,11 @@ bool DS1307::autoTime()
 	{
 		DECtoBCD(_time[TIME_HOURS]);
 	}
-	
+
 	_time[TIME_MONTH] = DECtoBCD(BUILD_MONTH);
 	_time[TIME_DATE] = DECtoBCD(BUILD_DATE);
 	_time[TIME_YEAR] = DECtoBCD(BUILD_YEAR - 2000); //! Not Y2K (or Y2.1K)-proof :\
-	
+
 	// Calculate weekday (from here: http://stackoverflow.com/a/21235587)
 	// 0 = Sunday, 6 = Saturday
 	int d = BUILD_DATE;
@@ -138,7 +140,7 @@ bool DS1307::autoTime()
 	int y = BUILD_YEAR;
 	int weekday = (d+=m<3?y--:y-2,23*m/9+d+4+y/4-y/100+y/400)%7 + 1;
 	_time[TIME_DAY] = DECtoBCD(weekday);
-	
+
 	setTime(_time, TIME_ARRAY_LENGTH);
 }
 
@@ -146,16 +148,16 @@ bool DS1307::autoTime()
 bool DS1307::update(void)
 {
 	uint8_t rtcReads[7];
-	
+
 	if (i2cReadBytes(DS1307_RTC_ADDRESS, DS1307_REGISTER_SECONDS, rtcReads, 7))
 	{
 		for (int i=0; i<TIME_ARRAY_LENGTH; i++)
 		{
 			_time[i] = rtcReads[i];
 		}
-		
+
 		_time[TIME_SECONDS] &= 0x7F; // Mask out CH bit
-		
+
 		if (_time[TIME_HOURS] & TWELVE_HOUR_MODE)
 		{
 			if (_time[TIME_HOURS] & TWELVE_HOUR_PM)
@@ -164,13 +166,13 @@ bool DS1307::update(void)
 				_pm = false;
 			_time[TIME_HOURS] &= 0x1F; // Mask out 24-hour bit from hours
 		}
-		
+
 		return true;
 	}
 	else
 	{
 		return false;
-	}	
+	}
 }
 
 // getSecond -- read/return seconds register of DS1307
@@ -187,14 +189,14 @@ uint8_t DS1307::getMinute(void)
 {
 	_time[TIME_MINUTES] = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_MINUTES);
 
-	return BCDtoDEC(_time[TIME_MINUTES]);	
+	return BCDtoDEC(_time[TIME_MINUTES]);
 }
 
 // getHour -- read/return hour register of DS1307
 uint8_t DS1307::getHour(void)
 {
 	uint8_t hourRegister = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_HOURS);
-	
+
 	if (hourRegister & TWELVE_HOUR_MODE)
 		hourRegister &= 0x1F; // Mask out am/pm, 24-hour bit
 	_time[TIME_HOURS] = hourRegister;
@@ -207,7 +209,7 @@ uint8_t DS1307::getDay(void)
 {
 	_time[TIME_DAY] = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_DAY);
 
-	return BCDtoDEC(_time[TIME_DAY]);		
+	return BCDtoDEC(_time[TIME_DAY]);
 }
 
 // getDate -- read/return date register of DS1307
@@ -215,7 +217,7 @@ uint8_t DS1307::getDate(void)
 {
 	_time[TIME_DATE] = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_DATE);
 
-	return BCDtoDEC(_time[TIME_DATE]);		
+	return BCDtoDEC(_time[TIME_DATE]);
 }
 
 // getMonth -- read/return month register of DS1307
@@ -223,7 +225,7 @@ uint8_t DS1307::getMonth(void)
 {
 	_time[TIME_MONTH] = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_MONTH);
 
-	return BCDtoDEC(_time[TIME_MONTH]);	
+	return BCDtoDEC(_time[TIME_MONTH]);
 }
 
 // getYear -- read/return year register of DS1307
@@ -231,7 +233,7 @@ uint8_t DS1307::getYear(void)
 {
 	_time[TIME_YEAR] = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_YEAR);
 
-	return BCDtoDEC(_time[TIME_YEAR]);		
+	return BCDtoDEC(_time[TIME_YEAR]);
 }
 
 // setSecond -- set the second register of the DS1307
@@ -242,7 +244,7 @@ bool DS1307::setSecond(uint8_t s)
 		uint8_t _s = DECtoBCD(s);
 		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_SECONDS, _s);
 	}
-	
+
 	return false;
 }
 
@@ -252,9 +254,9 @@ bool DS1307::setMinute(uint8_t m)
 	if (m <= 59)
 	{
 		uint8_t _m = DECtoBCD(m);
-		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_MINUTES, _m);		
+		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_MINUTES, _m);
 	}
-	
+
 	return false;
 }
 
@@ -266,7 +268,7 @@ bool DS1307::setHour(uint8_t h)
 		uint8_t _h = DECtoBCD(h);
 		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_HOURS, _h);
 	}
-	
+
 	return false;
 }
 
@@ -277,8 +279,8 @@ bool DS1307::setDay(uint8_t d)
 	{
 		uint8_t _d = DECtoBCD(d);
 		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_DAY, _d);
-	}	
-	
+	}
+
 	return false;
 }
 
@@ -289,8 +291,8 @@ bool DS1307::setDate(uint8_t d)
 	{
 		uint8_t _d = DECtoBCD(d);
 		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_DATE, _d);
-	}	
-	
+	}
+
 	return false;
 }
 
@@ -301,9 +303,9 @@ bool DS1307::setMonth(uint8_t mo)
 	{
 		uint8_t _mo = DECtoBCD(mo);
 		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_MONTH, _mo);
-	}	
-	
-	return false;	
+	}
+
+	return false;
 }
 
 // setYear -- set the year register of the DS1307
@@ -313,9 +315,9 @@ bool DS1307::setYear(uint8_t y)
 	{
 		uint8_t _y = DECtoBCD(y);
 		return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_YEAR, _y);
-	}	
-	
-	return false;	
+	}
+
+	return false;
 }
 
 // set12Hour -- set (or not) to 12-hour mode) | enable12 defaults to  true
@@ -331,15 +333,15 @@ bool DS1307::set12Hour(bool enable12)
 bool DS1307::set24Hour(bool enable24)
 {
 	uint8_t hourRegister = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_HOURS);
-	
+
 	bool hour12 = hourRegister & TWELVE_HOUR_MODE;
 	if ((hour12 && !enable24) || (!hour12 && enable24))
 		return true;
-	
+
 	uint8_t oldHour = hourRegister & 0x1F; // Mask out am/pm and 12-hour mode
 	oldHour = BCDtoDEC(oldHour); // Convert to decimal
 	uint8_t newHour = oldHour;
-	
+
 	if (enable24)
 	{
 		bool hourPM = hourRegister & TWELVE_HOUR_PM;
@@ -349,17 +351,17 @@ bool DS1307::set24Hour(bool enable24)
 	}
 	else
 	{
-		if (oldHour == 0) 
+		if (oldHour == 0)
 			newHour = 12;
 		else if (oldHour >= 13)
 			newHour -= 12;
-		
+
 		newHour = DECtoBCD(newHour);
 		newHour |= TWELVE_HOUR_MODE; // Set bit 6 to set 12-hour mode
 		if (oldHour >= 12)
 			newHour |= TWELVE_HOUR_PM; // Set PM bit if necessary
 	}
-	
+
 	return i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_HOURS, newHour);
 }
 
@@ -367,7 +369,7 @@ bool DS1307::set24Hour(bool enable24)
 bool DS1307::is12Hour(void)
 {
 	uint8_t hourRegister = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_HOURS);
-	
+
 	return hourRegister & TWELVE_HOUR_MODE;
 }
 
@@ -375,17 +377,17 @@ bool DS1307::is12Hour(void)
 bool DS1307::pm(void) // Read bit 5 in hour byte
 {
 	uint8_t hourRegister = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_HOURS);
-	
-	return hourRegister & TWELVE_HOUR_PM;	
+
+	return hourRegister & TWELVE_HOUR_PM;
 }
 
 // enable -- enable the DS1307's oscillator
 void DS1307::enable(void)  // Write 0 to CH bit
 {
 	uint8_t secondRegister = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_SECONDS);
-	
+
 	secondRegister &= ~(1<<7);
-	
+
 	i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_SECONDS, secondRegister);
 }
 
@@ -393,21 +395,21 @@ void DS1307::enable(void)  // Write 0 to CH bit
 void DS1307::disable(void) // Write 1 to CH bit
 {
 	uint8_t secondRegister = i2cReadByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_SECONDS);
-	
+
 	secondRegister |= (1<<7);
-	
+
 	i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_SECONDS, secondRegister);
 }
 
 // writeSQW -- Set the SQW pin high or low
 void DS1307::writeSQW(uint8_t high)
 {
-	if (high) 
+	if (high)
 		writeSQW(SQW_HIGH);
-	else 
+	else
 		writeSQW(SQW_LOW);
 }
-	
+
 // writeSQW -- Set the SQW pin high, low, or to one of the square wave frequencies
 void DS1307::writeSQW(sqw_rate value)
 {
@@ -422,10 +424,10 @@ void DS1307::writeSQW(sqw_rate value)
 	}
 	else
 	{
-		controlRegister |= CONTROL_BIT_SQWE;	
+		controlRegister |= CONTROL_BIT_SQWE;
 		controlRegister |= value;
 	}
-	
+
 	i2cWriteByte(DS1307_RTC_ADDRESS, DS1307_REGISTER_CONTROL, controlRegister);
 }
 
@@ -444,25 +446,27 @@ uint8_t DS1307::DECtoBCD(uint8_t val)
 // i2cWriteBytes -- write a set number of bytes to an i2c device, incrementing from a register
 bool DS1307::i2cWriteBytes(uint8_t deviceAddress, ds1307_registers reg, uint8_t * values, uint8_t len)
 {
-	Wire.beginTransmission(deviceAddress);
+    I2c.write(deviceAddress, reg, values, len);
+	/*Wire.beginTransmission(deviceAddress);
 	Wire.write(reg);
 	for (int i=0; i<len; i++)
 	{
 		Wire.write(values[i]);
 	}
-	Wire.endTransmission();
-	
+	Wire.endTransmission();*/
+
 	return true;
 }
 
 // i2cWriteByte -- write a byte value to an i2c device's register
 bool DS1307::i2cWriteByte(uint8_t deviceAddress, ds1307_registers reg, uint8_t value)
 {
-	Wire.beginTransmission(deviceAddress);
+    I2c.write(deviceAddress, reg, value);
+	/*Wire.beginTransmission(deviceAddress);
 	Wire.write(reg);
 	Wire.write(value);
-	Wire.endTransmission();
-	
+	Wire.endTransmission();*/
+
 	return true;
 }
 
@@ -470,20 +474,21 @@ bool DS1307::i2cWriteByte(uint8_t deviceAddress, ds1307_registers reg, uint8_t v
 uint8_t DS1307::i2cReadByte(uint8_t deviceAddress, ds1307_registers reg)
 {
 	uint8_t readTemp;
-	
-	Wire.beginTransmission(deviceAddress);
+
+    //I2c.read(deviceAddress, reg, (uint8_t) 1);
+	/*Wire.beginTransmission(deviceAddress);
 	Wire.write(reg);
 	Wire.endTransmission();
 
-	Wire.requestFrom(deviceAddress, (uint8_t) 1);
-	
-	return Wire.read();
+	Wire.requestFrom(deviceAddress, (uint8_t) 1);*/
+
+	return I2c.read(deviceAddress, reg, (uint8_t) 1);//Wire.read();
 }
 
 // i2cReadBytes -- read a set number of bytes from an i2c device, incrementing from a register
 bool DS1307::i2cReadBytes(uint8_t deviceAddress, ds1307_registers reg, uint8_t * dest, uint8_t len)
-{  
-	Wire.beginTransmission(deviceAddress);
+{
+	/*Wire.beginTransmission(deviceAddress);
 	Wire.write(reg);
 	Wire.endTransmission();
 
@@ -491,9 +496,9 @@ bool DS1307::i2cReadBytes(uint8_t deviceAddress, ds1307_registers reg, uint8_t *
 	for (int i=0; i<len; i++)
 	{
 		dest[i] = Wire.read();
-	}
-  
-	return true;  
+	}*/
+    I2c.read(deviceAddress, reg, len, dest);
+	return true;
 }
 
 DS1307 rtc; // Use rtc in sketches
