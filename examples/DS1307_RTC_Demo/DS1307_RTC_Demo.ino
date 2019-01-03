@@ -15,7 +15,8 @@ SparkFun RedBoard
 SparkFun Real Time Clock Module (v14)
 ******************************************************************************/
 #include <SparkFunDS1307RTC.h>
-#include <Wire.h>
+//#include <Wire.h>
+#include <I2C.h>
 
 // Comment out the line below if you want month printed before date.
 // E.g. October 31, 2016: 10/31/16 vs. 31/10/16
@@ -24,14 +25,14 @@ SparkFun Real Time Clock Module (v14)
 #define SQW_INPUT_PIN 2   // Input pin to read SQW
 #define SQW_OUTPUT_PIN 13 // LED to indicate SQW's state
 
-void setup() 
+void setup()
 {
   // Use the serial monitor to view time/date output
   Serial.begin(9600);
   pinMode(SQW_INPUT_PIN, INPUT_PULLUP);
   pinMode(SQW_OUTPUT_PIN, OUTPUT);
   digitalWrite(SQW_OUTPUT_PIN, digitalRead(SQW_INPUT_PIN));
-  
+
   rtc.begin(); // Call rtc.begin() to initialize the library
   // (Optional) Sets the SQW output to a 1Hz square wave.
   // (Pull-up resistor is required to use the SQW pin.)
@@ -49,10 +50,10 @@ void setup()
   // rtc.set12Hour(); // Use rtc.set12Hour to set to 12-hour mode
 }
 
-void loop() 
+void loop()
 {
   static int8_t lastSecond = -1;
-  
+
   // Call rtc.update() to update all rtc.seconds(), rtc.minutes(),
   // etc. return functions.
   rtc.update();
@@ -60,7 +61,7 @@ void loop()
   if (rtc.second() != lastSecond) // If the second has changed
   {
     printTime(); // Print the new time
-    
+
     lastSecond = rtc.second(); // Update lastSecond value
   }
 
@@ -85,7 +86,7 @@ void printTime()
     if (rtc.pm()) Serial.print(" PM"); // Returns true if PM
     else Serial.print(" AM");
   }
-  
+
   Serial.print(" | ");
 
   // Few options for printing the day, pick one:
