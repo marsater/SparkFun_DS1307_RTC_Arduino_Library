@@ -6,6 +6,8 @@ the connection is lost.
 
 ##### Requirements
 * [I2C library](https://github.com/rambo/I2C)
+
+
 SparkFun Real Time Clock Module (DS1307) Arduino Library
 ========================================
 
