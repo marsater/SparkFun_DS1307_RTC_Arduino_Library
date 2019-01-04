@@ -446,7 +446,7 @@ uint8_t DS1307::DECtoBCD(uint8_t val)
 // i2cWriteBytes -- write a set number of bytes to an i2c device, incrementing from a register
 bool DS1307::i2cWriteBytes(uint8_t deviceAddress, ds1307_registers reg, uint8_t * values, uint8_t len)
 {
-    I2c.write(deviceAddress, reg, values, len);
+    I2c.write(deviceAddress, (uint8_t) reg, values, len);
 	/*Wire.beginTransmission(deviceAddress);
 	Wire.write(reg);
 	for (int i=0; i<len; i++)
@@ -461,7 +461,7 @@ bool DS1307::i2cWriteBytes(uint8_t deviceAddress, ds1307_registers reg, uint8_t 
 // i2cWriteByte -- write a byte value to an i2c device's register
 bool DS1307::i2cWriteByte(uint8_t deviceAddress, ds1307_registers reg, uint8_t value)
 {
-    I2c.write(deviceAddress, reg, value);
+    I2c.write(deviceAddress, (uint8_t) reg, value);
 	/*Wire.beginTransmission(deviceAddress);
 	Wire.write(reg);
 	Wire.write(value);
@@ -482,7 +482,7 @@ uint8_t DS1307::i2cReadByte(uint8_t deviceAddress, ds1307_registers reg)
 
 	Wire.requestFrom(deviceAddress, (uint8_t) 1);*/
 
-	return I2c.read(deviceAddress, reg, (uint8_t) 1);//Wire.read();
+	return I2c.read(deviceAddress, (uint8_t) reg, (uint8_t) 1);//Wire.read();
 }
 
 // i2cReadBytes -- read a set number of bytes from an i2c device, incrementing from a register
@@ -497,7 +497,7 @@ bool DS1307::i2cReadBytes(uint8_t deviceAddress, ds1307_registers reg, uint8_t *
 	{
 		dest[i] = Wire.read();
 	}*/
-    I2c.read(deviceAddress, reg, len, dest);
+    I2c.read(deviceAddress, (uint8_t) reg, len, dest);
 	return true;
 }
 
